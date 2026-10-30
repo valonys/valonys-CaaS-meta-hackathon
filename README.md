@@ -1,6 +1,6 @@
 # Integrity Copilot — Meta AI Developer Hackathon
 
-**ValonyLabs.** A piping-integrity workbench for one circuit. It brings replayed process samples (PI), ultrasonic thickness (UT) readings, visual evidence and asset history together into one evidence-linked inspection proposal. A named engineer approves or rejects that proposal.
+**ValonyLabs.** A piping-integrity workbench for one circuit. It brings replayed process samples (PI), ultrasonic thickness (UT) readings, visual evidence and asset history together into one evidence-linked inspection proposal. A named engineer approves or rejects that proposal. The normal demo is a deterministic replay; the submission run below explicitly calls Muse Spark 1.3 and SAM 3.1 through Meta's API.
 
 All learned inference uses Meta models. The narrative runs on **Meta Muse locally** (Muse Glimmer through the Ollama desktop runtime, on loopback, at no cost). Visual evidence comes from **Meta SAM 3.1**.
 
@@ -10,8 +10,8 @@ All learned inference uses Meta models. The narrative runs on **Meta Muse locall
 | --- | --- | --- |
 | Corrosion rates, remaining life, next inspection date | **deterministic** | `lib/integrity-copilot/evidence.ts` (ST/LT rates, uncertainty policy, comparability checks) |
 | Data gaps, framework state, proposal | **deterministic** | `lib/integrity-copilot/workflow.ts` |
-| Narrative summary (EN + PT) | **model_inferred** (Meta Muse, local) | `lib/integrity-copilot/gateway.ts` + `faithfulness.ts`. It never changes a deterministic output. |
-| Visual regions on the inspection image | **model_inferred** (Meta SAM 3.1) | `lib/integrity-copilot/visual.ts` + `sam.ts` |
+| Narrative summary (EN + PT) | **model_inferred** (local Muse Glimmer or API Muse Spark 1.3, by explicit configuration) | `lib/integrity-copilot/gateway.ts` + `faithfulness.ts`. It never changes a deterministic output. |
+| Visual regions on the inspection image | **model_inferred** (recorded SAM 3.1 output by default; live SAM 3.1 API when opted in) | `lib/integrity-copilot/visual.ts` + `sam.ts` |
 | Approval | **engineer** | `POST /api/integrity-copilot/decide`: named engineer, rationale required, single use, stored durably |
 
 Rules the system enforces:
@@ -23,7 +23,7 @@ Rules the system enforces:
 
 ## Run it
 
-Requirements: Node 20+, and the [Ollama](https://ollama.com) desktop app with the `muse-glimmer` model available locally (for live narratives).
+Requirements: Node 20.19+ or Node 22.9+ for the TypeScript and `--env-file-if-exists` features used by the scripts. The optional local narrative path also needs the [Ollama](https://ollama.com) desktop app with `muse-glimmer` available.
 
 ```bash
 cd frontend
@@ -34,9 +34,26 @@ INTEGRITY_COPILOT_LIVE=1 npm run demo     # live: narrative from local Muse Glim
 
 Open http://localhost:3000 and use the approver token printed in the terminal to approve or reject the proposal. The workbench shows the replay for circuit PC-01 / CML-03: governing rate 0.1875 mm/y, remaining life 16 y, next inspection due 2032-01-01. Decisions persist in `frontend/.data/`; delete it to reset the demo.
 
-In live mode the launcher warms the narrative cache once at start-up, because the first local narrative takes about a minute and a half on a laptop. After that, replays come from the cache instantly.
+In live mode the launcher runs one replay at start-up to warm the configured model caches. With local Muse Glimmer, the first narrative can take about a minute and a half on a laptop. In API mode this startup replay can make one Muse Spark request and one SAM 3.1 request; the process-wide budget and call limits apply.
 
 Optional paid Meta API calls are off by default and must be requested explicitly: `INTEGRITY_COPILOT_MUSE=api` (Muse Spark narrative) or `INTEGRITY_COPILOT_SAM=live` (live SAM 3.1). Either one needs `MODEL_API_KEY`, kept outside the repository.
+
+### Submission run: Muse Spark 1.3 + SAM 3.1
+
+Store `MODEL_API_KEY` in `~/.config/caas-meta-hackathon/meta.env` (one `MODEL_API_KEY=...` line; do not put it in the repository). First run the one-request entitlement and response-schema check, capped at one call and $0.05:
+
+```bash
+npm run meta:smoke
+```
+
+Then start the demo with both current Meta models explicitly enabled:
+
+```bash
+INTEGRITY_COPILOT_LIVE=1 INTEGRITY_COPILOT_MUSE=api INTEGRITY_COPILOT_SAM=live npm run demo
+```
+
+The startup replay invokes the configured Muse narrative and SAM image analysis, then the UI reuses their validated cached results. The terminal and replay API response identify the requested and returned model IDs, live/recorded origin, status, and usage. If the API key, model entitlement, or response validation is unavailable, the app reports that state and does not substitute another provider. A default replay makes no model calls and uses recorded SAM output; do not describe that path as live inference.
+
 
 ## Checks
 
