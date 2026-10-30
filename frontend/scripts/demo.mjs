@@ -59,7 +59,7 @@ if (liveRequested) {
     for (let i = 0; i < 60; i++) {
       try {
         const t0 = Date.now();
-        console.log("  Warming local Muse cache (first narrative can take a minute or two)...");
+        console.log("  Warming the configured inspection replay and model caches...");
         const r = await fetch(`http://localhost:${port}/api/integrity-copilot/replay`, { headers: { "x-integrity-copilot-token": token } });
         const body = await r.json();
         console.log(`  Warm-up done in ${Math.round((Date.now() - t0) / 1000)} s: narrative ${body.meta_summary?.status ?? r.status}`);
