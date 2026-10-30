@@ -10,8 +10,8 @@ All learned inference uses Meta models. The narrative runs on **Meta Muse locall
 | --- | --- | --- |
 | Corrosion rates, remaining life, next inspection date | **deterministic** | `lib/integrity-copilot/evidence.ts` (ST/LT rates, uncertainty policy, comparability checks) |
 | Data gaps, framework state, proposal | **deterministic** | `lib/integrity-copilot/workflow.ts` |
-| Narrative summary (EN + PT) | **model_inferred** (Meta Muse, local) | `lib/integrity-copilot/gateway.ts` + `faithfulness.ts`. It never changes a deterministic output. |
-| Visual regions on the inspection image | **model_inferred** (Meta SAM 3.1) | `lib/integrity-copilot/visual.ts` + `sam.ts` |
+| Narrative summary (EN + PT) | **model_inferred** (local Meta Muse Glimmer by default; Muse Spark only when explicitly configured) | `lib/integrity-copilot/gateway.ts` + `faithfulness.ts`. It never changes a deterministic output. |
+| Visual regions on the inspection image | **model_inferred** (recorded SAM 3.1 output by default, labelled as recorded; live SAM 3.1 only when opted in) | `lib/integrity-copilot/visual.ts` + `sam.ts` |
 | Approval | **engineer** | `POST /api/integrity-copilot/decide`: named engineer, rationale required, single use, stored durably |
 
 Rules the system enforces:
@@ -23,7 +23,7 @@ Rules the system enforces:
 
 ## Run it
 
-Requirements: Node 20+, and the [Ollama](https://ollama.com) desktop app with the `muse-glimmer` model available locally (for live narratives).
+Requirements: Node 22.18 or newer (tests and scripts use Node's built-in TypeScript type stripping), and the [Ollama](https://ollama.com) desktop app with the `muse-glimmer` model available locally for live narratives. A default replay makes no model calls.
 
 ```bash
 cd frontend
@@ -34,7 +34,7 @@ INTEGRITY_COPILOT_LIVE=1 npm run demo     # live: narrative from local Muse Glim
 
 Open http://localhost:3000 and use the approver token printed in the terminal to approve or reject the proposal. The workbench shows the replay for circuit PC-01 / CML-03: governing rate 0.1875 mm/y, remaining life 16 y, next inspection due 2032-01-01. Decisions persist in `frontend/.data/`; delete it to reset the demo.
 
-In live mode the launcher warms the narrative cache once at start-up, because the first local narrative takes about a minute and a half on a laptop. After that, replays come from the cache instantly.
+In live mode the launcher runs one replay at start-up to warm the cache: with local Muse Glimmer the first narrative takes about a minute and a half on a laptop, and later replays come from the cache instantly. If paid API calls are opted in, that start-up replay can make one Muse Spark and one SAM 3.1 request, within the process-wide call and spend ceilings.
 
 Optional paid Meta API calls are off by default and must be requested explicitly: `INTEGRITY_COPILOT_MUSE=api` (Muse Spark narrative) or `INTEGRITY_COPILOT_SAM=live` (live SAM 3.1). Either one needs `MODEL_API_KEY`, kept outside the repository.
 
