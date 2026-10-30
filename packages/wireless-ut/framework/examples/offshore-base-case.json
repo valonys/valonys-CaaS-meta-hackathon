@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0.0",
+  "project_id": "wireless-ut-offshore-base-case",
+  "title": "Wireless UT offshore corrosion monitoring and mapping base case",
+  "status": "planning",
+  "source_role": "background_research_only",
+  "planning_basis": {
+    "circuits_min": 3,
+    "circuits_max": 5,
+    "locations_min": 24,
+    "locations_max": 40,
+    "duration_months_approx": 9,
+    "monitored_operation_months_min": 6
+  },
+  "runtime_data": {
+    "status": "not_provided",
+    "measurement_records": 0,
+    "site_verified": false
+  },
+  "assumption_claim_ids": ["CLM-008", "CLM-009", "CLM-010", "CLM-011", "CLM-012"],
+  "assurance_boundaries": [
+    "no_image_derived_thickness",
+    "no_model_derived_measurement",
+    "no_full_wall_inference_from_point_sensor",
+    "no_inspection_replacement",
+    "no_autonomous_ffs_or_continued_operation",
+    "engineer_approval_required"
+  ]
+}

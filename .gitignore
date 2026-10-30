@@ -1,0 +1,15 @@
+node_modules/
+.next/
+dist/
+cdk.out/
+cdk-outputs.json
+*.js.map
+__pycache__/
+*.pyc
+.env
+.env.local
+chroma_db/
+data/
+.DS_Store
+*.tsbuildinfo
+.data/

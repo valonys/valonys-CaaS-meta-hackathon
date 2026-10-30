@@ -1,0 +1,30 @@
+{
+  "name": "consulting-mvp-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "acceptance": "node scripts/acceptance.mjs",
+    "test": "node --test \"tests/**/*.test.ts\"",
+    "test:routes": "node tests/integrity-routes.smoke.mjs",
+    "guard:providers": "node scripts/provider-guard.ts",
+    "guard:providers:release": "node scripts/provider-guard.ts --release",
+    "meta:smoke": "node --env-file-if-exists=\"$HOME/.config/caas-meta-hackathon/meta.env\" scripts/meta-smoke.ts",
+    "demo": "node scripts/demo.mjs"
+  },
+  "dependencies": {
+    "next": "^14.1.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/react": "^18.2.48",
+    "autoprefixer": "^10.4.17",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.3.3"
+  }
+}

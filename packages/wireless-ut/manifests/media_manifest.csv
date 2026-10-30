@@ -1,0 +1,10 @@
+asset_id,repo_path,source_package_path,video_timestamp_s,evidence_id,description,width_px,height_px,sha256
+IMG-001,evidence/images/timeline_00h02m21s267.jpg,trimmed_frames/timeline_00h02m21s267.jpg,141.267,E01,"Monitoring versus inspection comparison and example trend",1372,771,b29709e85f4dcd92abfb0ec56c28b07284fe2064d024ec6c87c6445ec30eb623
+IMG-002,evidence/images/timeline_00h10m35s667.jpg,trimmed_frames/timeline_00h10m35s667.jpg,635.667,E03,"Conceptual components: sensors, gateway and data management",1372,771,fced1c86c5d17fcc6a405328cd5ea94ed530bff4aab156fc993400bd4480c428
+IMG-003,evidence/images/timeline_00h18m14s767.jpg,trimmed_frames/timeline_00h18m14s767.jpg,1094.767,E06,"Industrial sensor installation examples",1372,771,b81f905d5a7e114b254bba71ca398c983970c21a0831c97f87a7e798ca7c117e
+IMG-004,evidence/images/timeline_00h20m00s700.jpg,trimmed_frames/timeline_00h20m00s700.jpg,1200.700,E07,"Flat no-corrosion-rate trend example",1372,771,df279221131e62c3b3f392b190722e47459924b748ac313f0cf5b63394ec17a0
+IMG-005,evidence/images/timeline_00h24m07s900.jpg,trimmed_frames/timeline_00h24m07s900.jpg,1447.900,E08,"Thickness and temperature overlay example",1372,771,6bdb66f6ef72d70f3ea7c3a78e2ea0c062fb1f46d22029b610513e9c0f855786
+IMG-006,evidence/images/timeline_00h25m18s533.jpg,trimmed_frames/timeline_00h25m18s533.jpg,1518.533,E10,"Limitations and best-practices slide",1372,771,6341f2806d1357b4937a6b25f824e611f91f64bc24d3ad99ef60ea9a77266708
+IMG-007,evidence/images/timeline_00h28m15s100.jpg,trimmed_frames/timeline_00h28m15s100.jpg,1695.100,E11,"High-risk case: baseline scan and selected sensor placement",1372,771,5329f66b6ccd2f0fff2ecdc636375ff5a7c9fd67a2e0b941b84064cadae87862
+IMG-008,evidence/images/timeline_00h28m50s433.jpg,trimmed_frames/timeline_00h28m50s433.jpg,1730.433,E12,"High-risk case trend with annotated process change",1372,771,fd0ba47c8e425648ef369150ddba2ad2f9df2cdd69196cc5cd6ab5e4ea0bf849
+IMG-009,evidence/images/timeline_00h33m32s933.jpg,trimmed_frames/timeline_00h33m32s933.jpg,2012.933,E14,"Low-risk case dashboard and claimed operational benefits",1372,771,b4b86e9d1a8e7add9a0cfe053a1d7f62327f94c5779b61c624d44c1976b5b689

@@ -1,0 +1,8 @@
+{
+  "_label": "RECORDED real sam-3.1 output (not replayed live). Image: public/evidence/synthetic-pipe.png, a generated synthetic test image; no client media.",
+  "recorded_at": "2026-10-30",
+  "model": "sam-3.1",
+  "prompt": "orange patch",
+  "image_ref": "IMG-SYNTH-PIPE-01",
+  "output": "<0f>0<|box;x1=140;y1=60;x2=199;y2=94;w=320;h=160|><|mask;x=0;y=0;data=35,60,~!!!%U!9F%r_+5$cw/KNn`e5v?g]lOhd=OmQHb/)a1_83Y]-Lz3%_jZ=[kOnE-B9xq!=3+{Paj{=XsHU&+`aJEW7.r&VJqYQoR2Ib[{q5#Ayep@(xvPQ#K@M_KC/l88Zw-5*zn`*PWlM9)RyDFbtWqZY`@B!Ki+y&vzJIuVTn29[jwOZWnJ])CRJF7kW5P=y+9/Y+kGlkNJ`D1s^MSKdNLg-c8hW%l_'e5:Z2fT=69dV=1tw{xDW:qcF%wU.-f!K+R7OM/=R'0@*.b6vg6]E5z?%99AWP`xAoq&S8m]!M/Iti5JcEUG`G_V`N9h7=?u8QpVM0A1[r`V({WfC.&448j[3xFp!ZMAVaI.CdUOIMiW$!etvS(mV$^eOUG.3E!!!|>\n"
+}
