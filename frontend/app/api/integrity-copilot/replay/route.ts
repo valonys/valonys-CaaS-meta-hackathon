@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkApproverToken, replay } from "@/lib/integrity-copilot/server";
 
 export const dynamic = "force-dynamic";
+// Model calls must never be served from Next's persistent fetch cache.
+export const fetchCache = "force-no-store";
 
 export async function GET(req: NextRequest) {
   if (process.env.INTEGRITY_COPILOT_LIVE === "1") {

@@ -94,6 +94,9 @@ export class ResponseCache {
 export interface GatewayConfig {
   apiKey?: string;
   local?: boolean; // local Muse enabled (live mode)
+  // Paid API models enabled one by one (C-019 P1): a SAM opt-in must not unlock Muse Spark, and
+  // vice versa. Undefined = every allowlisted API model (direct construction in tests).
+  apiModels?: readonly AllowedModel[];
   narrativeModel?: AllowedModel; // default: local muse-glimmer
   localTimeoutMs?: number;
   maxCalls: number;
@@ -162,7 +165,8 @@ export class MetaGateway {
 
   // Whether a given model can be called: local models need local mode, API models need a key.
   canServe(model: AllowedModel): boolean {
-    return LOCAL_MODELS.includes(model) ? Boolean(this.cfg.local) : Boolean(this.cfg.apiKey);
+    if (LOCAL_MODELS.includes(model)) return Boolean(this.cfg.local);
+    return Boolean(this.cfg.apiKey) && (this.cfg.apiModels === undefined || this.cfg.apiModels.includes(model));
   }
 
   get configured(): boolean {
@@ -197,6 +201,10 @@ export class MetaGateway {
     }
     const model = req.model as AllowedModel;
     if (LOCAL_MODELS.includes(model)) return this.respondLocal(req, model, call_id, log, now);
+    if (this.cfg.apiModels !== undefined && !this.cfg.apiModels.includes(model)) {
+      log({ outcome: "unavailable", detail: "model_not_enabled" });
+      return { status: "unavailable", reason: "not_configured", detail: `paid model "${model}" is not enabled (its own opt-in is required)`, call_id };
+    }
     if (!this.cfg.apiKey) {
       log({ outcome: "unavailable", detail: "not_configured" });
       return { status: "unavailable", reason: "not_configured", detail: "MODEL_API_KEY is not configured; Meta inference is unavailable", call_id };
@@ -244,6 +252,7 @@ export class MetaGateway {
       try {
         const res = await fetchImpl(`${META_BASE_URL}/responses`, {
           method: "POST",
+          cache: "no-store", // never Next's persistent Data Cache: every call is real or reported as cached by us
           headers: { Authorization: `Bearer ${this.cfg.apiKey}`, "Content-Type": "application/json" },
           body,
           signal: ctrl.signal,
@@ -348,6 +357,7 @@ export class MetaGateway {
     try {
       const res = await fetchImpl(LOCAL_MUSE_URL, {
         method: "POST",
+        cache: "no-store", // never Next's persistent Data Cache (it replayed stale local replies as fresh calls)
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ model, messages, stream: false, think: false, options: { num_predict: maxOut } }),
         signal: ctrl.signal,
@@ -364,13 +374,16 @@ export class MetaGateway {
       const usage = counts.every((c) => c === undefined || (Number.isSafeInteger(c) && (c as number) >= 0))
         ? { input_tokens: counts[0] as number | undefined, output_tokens: counts[1] as number | undefined }
         : "invalid";
+      // Only a finished response counts (C-019 P1): done must be true with a terminal reason.
       if (json?.done_reason === "length") {
         const detail = "response incomplete: max_output_tokens";
         log({ outcome: "error", endpoint: "local-chat", latency_ms: now() - t0, model_id: modelId, usage: usage === "invalid" ? null : usage, detail });
         return { status: "error", reason: "incomplete", detail, call_id };
       }
       const problem =
-        text === null || modelId === null
+        json?.done !== true || json?.done_reason !== "stop"
+          ? `response not finished (done=${String(json?.done)}, done_reason=${String(json?.done_reason)})`
+          : text === null || modelId === null
           ? "response lacked output text or model id"
           : !localModelMatches(model, modelId)
             ? `returned model "${modelId}" is not the requested local Muse model "${model}"`
@@ -492,6 +505,10 @@ export function gatewayFromEnv(env: Record<string, string | undefined> = process
     narrativeModel: env.INTEGRITY_COPILOT_MUSE === "api" ? "muse-spark-1.3" : "muse-glimmer",
     // The key is honoured only when a paid call is explicitly requested; by default nothing is billed.
     apiKey: env.INTEGRITY_COPILOT_LIVE === "1" && (env.INTEGRITY_COPILOT_MUSE === "api" || env.INTEGRITY_COPILOT_SAM === "live") ? env.MODEL_API_KEY : undefined,
+    apiModels: [
+      ...(env.INTEGRITY_COPILOT_LIVE === "1" && env.INTEGRITY_COPILOT_MUSE === "api" ? (["muse-spark-1.3"] as const) : []),
+      ...(env.INTEGRITY_COPILOT_LIVE === "1" && env.INTEGRITY_COPILOT_SAM === "live" ? (["sam-3.1"] as const) : []),
+    ],
     ledger: ledger ?? ledgerFromEnv(env),
   });
 }

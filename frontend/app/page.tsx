@@ -165,9 +165,13 @@ export default function Workbench() {
             </p>
           )}
         </div>
-        <button onClick={() => void load()} className="rounded border border-gray-700 px-3 py-1 text-sm hover:bg-gray-800">
-          Re-run replay
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Live mode requires the approver token for replay too, so it is reachable before any data loads. */}
+          <input type="password" placeholder="Approver token" value={token} onChange={(e) => setToken(e.target.value)} className="w-40 rounded border border-gray-700 bg-transparent px-2 py-1 text-sm" />
+          <button onClick={() => void load()} className="rounded border border-gray-700 px-3 py-1 text-sm hover:bg-gray-800">
+            Re-run replay
+          </button>
+        </div>
       </header>
 
       {data && <div className="rounded border border-amber-700/60 bg-amber-950/30 px-3 py-2 text-sm text-amber-200">{data.data_label}</div>}
@@ -241,8 +245,7 @@ export default function Workbench() {
               </p>
             )}
             {p!.status === "draft" ? (
-              <div className="grid gap-2 md:grid-cols-[1fr_1fr_2fr_auto_auto]">
-                <input type="password" placeholder="Approver token" value={token} onChange={(e) => setToken(e.target.value)} className="rounded border border-gray-700 bg-transparent px-2 py-1 text-sm" />
+              <div className="grid gap-2 md:grid-cols-[1fr_2fr_auto_auto]">
                 <input placeholder="Engineer (name)" value={engineer} onChange={(e) => setEngineer(e.target.value)} className="rounded border border-gray-700 bg-transparent px-2 py-1 text-sm" />
                 <input placeholder="Rationale" value={rationale} onChange={(e) => setRationale(e.target.value)} className="rounded border border-gray-700 bg-transparent px-2 py-1 text-sm" />
                 <button onClick={() => void decide("approved")} className="rounded bg-emerald-700 px-3 py-1 text-sm hover:bg-emerald-600">

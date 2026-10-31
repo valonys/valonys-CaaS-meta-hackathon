@@ -6,6 +6,10 @@ import { join } from "node:path";
 import fixtureJson from "./fixtures/synthetic-circuit.json";
 import samRecorded from "./fixtures/sam-recorded.json";
 import { visualEvidence, type VisualEvidence } from "./visual.ts";
+import { installEgressAllowlist } from "./egress.ts";
+
+// Network boundary for the whole server process: only the Meta API and loopback local Muse.
+installEgressAllowlist();
 import { gatewayFromEnv, ledgerFromEnv, ResponseCache, type BudgetLedger } from "./gateway.ts";
 import { decideProposal, evidenceIndex, runReplay, type CircuitFixture, type WorkflowResult } from "./workflow.ts";
 import { decisionStoreFromEnv, type DecisionStore } from "./decision-store.ts";

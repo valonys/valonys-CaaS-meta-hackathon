@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { checkApproverToken, decide } from "@/lib/integrity-copilot/server";
 
 export const dynamic = "force-dynamic";
+// Model calls must never be served from Next's persistent fetch cache.
+export const fetchCache = "force-no-store";
 
 export async function POST(req: NextRequest) {
   const gate = checkApproverToken(req.headers.get("x-integrity-copilot-token"));

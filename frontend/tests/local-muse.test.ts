@@ -92,3 +92,47 @@ test("local model echo accepts name or name:tag only", () => {
   assert.ok(!localModelMatches("muse-glimmer", "muse-glimmer-x:latest"));
   assert.ok(!localModelMatches("muse-glimmer", "other:latest"));
 });
+
+test("C-019 P1: each paid model needs its own opt-in (SAM does not unlock Muse Spark, nor vice versa)", async () => {
+  const stub = (async () => { throw new Error("must not call the API"); }) as unknown as typeof fetch;
+  const samOnly = gatewayFromEnv({ INTEGRITY_COPILOT_LIVE: "1", INTEGRITY_COPILOT_SAM: "live", MODEL_API_KEY: "k" });
+  (samOnly as unknown as { cfg: { fetchImpl: typeof fetch } }).cfg.fetchImpl = stub;
+  assert.equal(samOnly.canServe("muse-spark-1.3"), false);
+  const r1 = await samOnly.respond({ model: "muse-spark-1.3", input: "x", evidence_ids: [] });
+  assert.ok(r1.status === "unavailable" && /not enabled/.test(r1.detail), JSON.stringify(r1));
+  const museOnly = gatewayFromEnv({ INTEGRITY_COPILOT_LIVE: "1", INTEGRITY_COPILOT_MUSE: "api", MODEL_API_KEY: "k" });
+  (museOnly as unknown as { cfg: { fetchImpl: typeof fetch } }).cfg.fetchImpl = stub;
+  assert.equal(museOnly.canServe("sam-3.1"), false);
+  const r2 = await museOnly.respond({ model: "sam-3.1", images: 1, input: "x", evidence_ids: [] });
+  assert.ok(r2.status === "unavailable" && /not enabled/.test(r2.detail), JSON.stringify(r2));
+  assert.equal(gatewayFromEnv({ INTEGRITY_COPILOT_LIVE: "1", MODEL_API_KEY: "k", INTEGRITY_COPILOT_MUSE: "api", INTEGRITY_COPILOT_SAM: "live" }).canServe("muse-wonder-1.0"), false);
+});
+
+test("C-019 P1: an unfinished local reply (done:false or no terminal reason) is never ok or cached", async () => {
+  for (const body of [
+    { model: "muse-glimmer", message: { content: "CML#a governs." }, done: false, prompt_eval_count: 5, eval_count: 5 },
+    { model: "muse-glimmer", message: { content: "CML#a governs." }, done: true, prompt_eval_count: 5, eval_count: 5 },
+    { model: "muse-glimmer", message: { content: "CML#a governs." }, done: true, done_reason: "unload" },
+  ]) {
+    const cache = new ResponseCache();
+    const g = new MetaGateway({ local: true, cache, fetchImpl: (async () => chat(body)) as unknown as typeof fetch });
+    const r = await g.respond({ model: "muse-glimmer", input: "x", evidence_ids: [] });
+    assert.ok(r.status === "error" && r.reason === "malformed_response" && /not finished/.test(r.detail), JSON.stringify(r));
+    assert.equal(cache.size, 0);
+    assert.equal(g.usage[0].outcome, "error");
+  }
+});
+
+test("C-021: every model request opts out of Next's persistent fetch cache", async () => {
+  const inits: RequestInit[] = [];
+  const spy = (async (_u: string, init: RequestInit) => {
+    inits.push(init);
+    return _u.startsWith("http://127.0.0.1")
+      ? chat({ model: "muse-glimmer", message: { content: "CML#a governs." }, done: true, done_reason: "stop" })
+      : new Response(JSON.stringify({ model: "muse-spark-1.3", output_text: "x", usage: { input_tokens: 1, output_tokens: 1 } }), { status: 200 });
+  }) as unknown as typeof fetch;
+  await new MetaGateway({ local: true, fetchImpl: spy }).respond({ model: "muse-glimmer", input: "x", evidence_ids: [] });
+  await new MetaGateway({ apiKey: "k", fetchImpl: spy }).respond({ model: "muse-spark-1.3", input: "x", evidence_ids: [] });
+  assert.equal(inits.length, 2);
+  for (const init of inits) assert.equal(init.cache, "no-store");
+});
