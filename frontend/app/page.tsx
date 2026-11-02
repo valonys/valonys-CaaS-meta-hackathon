@@ -396,7 +396,7 @@ export default function Workbench() {
                       <td className="py-2 pr-3 font-mono">{f.location_id ?? f.position}</td>
                       <td className="py-2 pr-3">{f.point_description}</td>
                       <td className="py-2 pr-3 font-mono">{f.code?.code ?? "—"}</td>
-                      <td className={`py-2 pr-3 ${f.code && ["medium", "high", "critical"].includes(f.code.severity) ? "text-amber-300" : f.code?.severity === "unmapped" ? "text-sky-300" : "text-gray-300"}`}>{f.code?.severity ?? "—"}</td>
+                      <td className={`py-2 pr-3 ${f.code && ["medium", "high", "critical"].includes(f.code.severity) ? "text-amber-300" : f.code?.severity === "unmapped" ? "text-sky-300" : "text-gray-300"}`}>{f.code?.severity ?? "—"}{f.code?.severity_source === "reviewed overlay" ? " (overlay)" : ""}</td>
                       <td className="py-2 pr-3">
                         {f.code?.description}
                         {f.comment && <div className="text-xs text-gray-400">{f.comment}</div>}

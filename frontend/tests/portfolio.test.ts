@@ -18,7 +18,7 @@ async function rank(p: Portfolio) {
 }
 
 test("codes: workbook valuation codes decode deterministically; unknown codes are 'unmapped', never guessed", () => {
-  assert.deepEqual(decodeCode("02co"), { code: "02CO", severity: "medium", description: "Minor coating damage (Ri2-Ri1)", mechanism: "Coating breakdown" });
+  assert.deepEqual(decodeCode("02co"), { code: "02CO", severity: "medium", description: "Minor coating damage (Ri2-Ri1)", mechanism: "Coating breakdown", severity_source: "code map" });
   assert.equal(decodeCode("04TL").severity, "critical");
   assert.equal(decodeCode("01AS").severity, "unmapped"); // real report code absent from the map
   assert.equal(parseQualReading("02PI - 1-Pitting observed, with moderate growth")?.code, "02PI");
@@ -89,8 +89,8 @@ test("proposal method comes from the trend's latest reading (no hardcoded proced
   assert.equal(r.proposal.proposed_next_inspection?.method, "UTM-01-100% per PROC-SYN-UT-01 rev A (same procedure as trend basis)");
 });
 
-test("C-027 P1: mapped codes the map leaves 'unknown' (00ND, 12TL) stay visible as unranked findings", async () => {
-  for (const code of ["12TL - Through thickness corrosion, leaks", "00ND - Inspection Not Done"]) {
+test("C-027 P1: mapped codes the map leaves 'unknown' and without an overlay (00ND, 00UN) stay visible as unranked findings", async () => {
+  for (const code of ["00UN - Unknown", "00ND - Inspection Not Done"]) {
     const p = load();
     p.campaigns.find((c) => c.work_order === "71000010")!.rows.push({ tag: p.lines[0].tag, position: "A-01", class: "DMGE", point_description: "External damage", uom: "", quant_reading: null, qual_reading: code, comment: "" });
     const a1 = (await rank(p)).find((s) => s.location_id === "A-01")!;
@@ -131,4 +131,22 @@ test("C-027 P1: no decision-bearing defaults; missing quality, register date or 
   const ut = workbookToLines(load())[0].fixture.ut_rows.find((x) => x.record_id === "WB-71000004-A-02")!;
   assert.equal(ut.inspector, "Inspector A (synthetic)");
   assert.equal(ut.quality, "good");
+});
+
+test("severity overlay for legacy 05+ codes (user decision 2026-11-02): ranked, with the overlay recorded", async () => {
+  const expect: Record<string, string> = { "05RL": "medium", "07FL": "high", "08CO": "high", "08WT": "high", "10TM": "critical", "11TT": "critical", "12TL": "critical" };
+  for (const [code, sev] of Object.entries(expect)) {
+    const d = decodeCode(code);
+    assert.equal(d.severity, sev, code);
+    assert.equal(d.severity_source, "reviewed overlay", code);
+  }
+  assert.equal(decodeCode("00ND").severity, "unknown"); // not-inspected codes stay blind spots
+  assert.equal(decodeCode("00ND").severity_source, "none");
+  // A leak finding on A-01 is now "Act now" (was tier 4 unranked).
+  const p = load();
+  p.campaigns.find((c) => c.work_order === "71000010")!.rows.push({ tag: p.lines[0].tag, position: "A-01", class: "DMGE", point_description: "External damage", uom: "", quant_reading: null, qual_reading: "12TL - Through thickness corrosion, leaks", comment: "" });
+  const top = (await rank(p))[0];
+  assert.equal(top.location_id, "A-01");
+  assert.equal(top.tier, 1);
+  assert.equal(top.worst_finding, "critical");
 });

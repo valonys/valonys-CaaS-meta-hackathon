@@ -192,6 +192,39 @@ export function validateUpload(
   };
 }
 
+// Full load-time schema check of one stored upload (C-030 polish): timestamps, campaign fields,
+// every row and every decision. A malformed store refuses to load rather than feeding the ranking.
+const isTs = (v: unknown) => typeof v === "string" && !Number.isNaN(Date.parse(v));
+const isStr = (v: unknown) => typeof v === "string";
+export function storedUploadProblem(u: unknown): string | null {
+  if (!u || typeof u !== "object") return "not an object";
+  const x = u as Partial<StoredUpload>;
+  if (!isTs(x.uploaded_at)) return "uploaded_at is not a timestamp";
+  const c = x.campaign as Partial<Campaign> | undefined;
+  if (!c || typeof c !== "object") return "campaign missing";
+  for (const k of ["work_order", "technique", "read_date", "performer"] as const) if (!isStr(c[k]) || !(c[k] as string).trim()) return `campaign.${k} missing`;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(c.read_date as string) || new Date(`${c.read_date}T00:00:00Z`).toISOString().slice(0, 10) !== c.read_date) return "campaign.read_date is not a calendar date";
+  if (c.origin !== "replay") return "campaign.origin must be replay";
+  if (!isTs(c.ingested_at)) return "campaign.ingested_at is not a timestamp";
+  if (!Array.isArray(c.rows) || !c.rows.length) return "campaign.rows missing";
+  const ut = /^(UT|WUT)/i.test(c.technique as string);
+  if (ut) {
+    for (const k of ["procedure_id", "procedure_revision", "instrument_id", "calibration_ref"] as const) if (!isStr(c[k]) || !(c[k] as string).trim()) return `campaign.${k} missing`;
+    if (!(typeof c.measurement_uncertainty_mm === "number" && Number.isFinite(c.measurement_uncertainty_mm) && c.measurement_uncertainty_mm >= 0)) return "campaign.measurement_uncertainty_mm invalid";
+    if (!(QUALITIES as readonly string[]).includes(c.quality as string)) return "campaign.quality invalid";
+  }
+  for (const [i, r] of (c.rows as Partial<WorkbookRow>[]).entries()) {
+    if (!r || !isStr(r.tag) || !isStr(r.position) || !(r.tag as string) || !(r.position as string)) return `row ${i}: tag/position missing`;
+    if (ut ? !(typeof r.quant_reading === "number" && Number.isFinite(r.quant_reading) && r.quant_reading > 0) : !parseQualReading(r.qual_reading)) return `row ${i}: reading invalid`;
+  }
+  if (!Array.isArray(x.decisions)) return "decisions missing";
+  for (const [i, d] of (x.decisions as Partial<ComparabilityDecision>[]).entries()) {
+    if (!d || d.kind !== "comparability_decision" || !isStr(d.id) || !isStr(d.location_id) || !Array.isArray(d.reading_ids) || !d.reading_ids.length) return `decision ${i}: incomplete`;
+    if (!isStr(d.rationale) || !(d.rationale as string).trim() || !isStr(d.decided_by) || !(d.decided_by as string).trim() || !isTs(d.decided_at)) return `decision ${i}: rationale/decided_by/decided_at invalid`;
+  }
+  return null;
+}
+
 // Durable, atomic store of accepted uploads (one JSON file, tmp + rename).
 export class UploadStore {
   readonly file: string;
@@ -203,10 +236,10 @@ export class UploadStore {
     if (existsSync(this.file)) {
       const raw = JSON.parse(readFileSync(this.file, "utf8")) as { version?: unknown; uploads?: unknown };
       if (raw?.version !== 1 || !Array.isArray(raw.uploads)) throw new Error(`corrupt upload store ${this.file}`);
-      for (const u of raw.uploads as Partial<StoredUpload>[]) {
-        const ok = u && typeof u.uploaded_at === "string" && Array.isArray(u.decisions) && u.campaign && typeof u.campaign.work_order === "string" && Array.isArray(u.campaign.rows) && typeof u.campaign.read_date === "string";
-        if (!ok) throw new Error(`corrupt upload store ${this.file}: malformed upload entry`);
-      }
+      raw.uploads.forEach((u, i) => {
+        const problem = storedUploadProblem(u);
+        if (problem) throw new Error(`corrupt upload store ${this.file}: malformed upload entry ${i}: ${problem}`);
+      });
       this.items = raw.uploads as StoredUpload[];
     } else this.items = [];
   }

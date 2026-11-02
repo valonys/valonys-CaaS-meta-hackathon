@@ -61,7 +61,7 @@ export function rankNextSpots(results: LineResult[], asOf: string): NextSpot[] {
     // Only "low" (good condition) findings are left out; unknown and unmapped stay visible.
     const findingsAt = (loc: string | null) => r.findings.filter((f) => f.location_id === loc && f.code && f.code.severity !== "low");
     const describe = (f: VisualFinding) => {
-      const unranked = f.code!.severity === "unknown" || f.code!.severity === "unmapped" ? " [unranked by the code map: engineer review]" : "";
+      const unranked = f.code!.severity === "unknown" || f.code!.severity === "unmapped" ? " [unranked by the code map: engineer review]" : f.code!.severity_source === "reviewed overlay" ? ` [severity ${f.code!.severity}: reviewed overlay for legacy code]` : "";
       return `${f.code!.code} ${f.code!.description}${unranked} (${f.technique}, ${f.read_date}${f.comment ? `: ${f.comment}` : ""})`;
     };
 

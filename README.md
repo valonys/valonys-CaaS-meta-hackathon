@@ -14,7 +14,7 @@ All learned inference uses Meta models. The narrative runs on **Meta Muse locall
 | Data gaps, framework state, proposal | **deterministic** | `lib/integrity-copilot/workflow.ts` |
 | Narrative summary (EN + PT) | **model_inferred** (local Meta Muse Glimmer by default; Muse Spark only when explicitly configured) | `lib/integrity-copilot/gateway.ts` + `faithfulness.ts`. It never changes a deterministic output. |
 | Next-spots ranking across lines | **deterministic** | `lib/integrity-copilot/nextspots.ts` (tiers: act now · within 2 years · open visual finding · blind spot · monitor, each with its reasons) |
-| Visual findings | **inspection codes** | `lib/integrity-copilot/codes.ts` + `inspection-codes.ts` (reviewed valuation-code map; unknown codes are shown as "unmapped", never guessed) |
+| Visual findings | **inspection codes** | `lib/integrity-copilot/codes.ts` + `inspection-codes.ts` (reviewed valuation-code map; codes not in the map are shown as "unmapped", never guessed. Legacy condition codes 05+ such as 12TL "through-thickness corrosion, leaks" get an explicit, labelled severity overlay derived from each code's own description; 00xx "not inspected" codes stay visible blind spots) |
 | Workbook import | **deterministic** | `lib/integrity-copilot/workbook.ts` (Inspection Workbook layout → per-line circuits; procedure, instrument, calibration and uncertainty come from engineer-entered campaign metadata) |
 | Visual regions on the inspection image | **model_inferred** (recorded SAM 3.1 output by default, labelled as recorded; live SAM 3.1 only when opted in) | `lib/integrity-copilot/visual.ts` + `sam.ts` |
 | Approval | **engineer** | `POST /api/integrity-copilot/decide`: named engineer, rationale required, single use, stored durably |

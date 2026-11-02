@@ -145,3 +145,31 @@ test("CSV and store polish: duplicate headers, UTF-8 byte limit, row limit, malf
   writeFileSync(join(dir, "uploads.json"), JSON.stringify({ version: 1, uploads: [{ nope: true }] }));
   assert.throws(() => new UploadStore(dir), /malformed upload entry/);
 });
+
+test("upload store: full nested schema check on load (C-030 polish)", async () => {
+  const { storedUploadProblem } = await import("../lib/integrity-copilot/uploads.ts");
+  const good = validateUpload(DEMO, UT_FORM, CMP, ctx(load())).stored!;
+  assert.equal(storedUploadProblem(good), null);
+  const clone = () => JSON.parse(JSON.stringify(good));
+  const cases: [(x: any) => void, RegExp][] = [
+    [(x) => (x.uploaded_at = "nope"), /uploaded_at/],
+    [(x) => (x.campaign.read_date = "2025-02-30"), /calendar date/],
+    [(x) => (x.campaign.origin = "synthetic"), /origin/],
+    [(x) => delete x.campaign.quality, /quality/],
+    [(x) => (x.campaign.rows[0].quant_reading = -1), /reading invalid/],
+    [(x) => (x.decisions[0].rationale = ""), /decision 0/],
+    [(x) => (x.decisions[0].reading_ids = []), /decision 0/],
+  ];
+  for (const [mutate, re] of cases) {
+    const x = clone();
+    mutate(x);
+    assert.match(String(storedUploadProblem(x)), re);
+  }
+  // the reviewer's case: string timestamp + arrays + required keys only
+  assert.notEqual(storedUploadProblem({ uploaded_at: "x", decisions: [], campaign: { work_order: "W", rows: [], read_date: "2025-01-01" } }), null);
+  const dir = mkdtempSync(join(tmpdir(), "icp-up-"));
+  const bad = clone();
+  bad.campaign.rows[0].quant_reading = "abc";
+  writeFileSync(join(dir, "uploads.json"), JSON.stringify({ version: 1, uploads: [bad] }));
+  assert.throws(() => new UploadStore(dir), /malformed upload entry 0: row 0/);
+});
