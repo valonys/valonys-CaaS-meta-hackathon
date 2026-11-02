@@ -1,0 +1,924 @@
+{
+ "_label": "SYNTHETIC portfolio shaped like an Inspection Workbook export (three lines on a fictional SYN-FPSO). Every value is invented for testing and hand-calculation; not site data. Layout modelled on the workbook columns only.",
+ "plant": "SYN-FPSO",
+ "as_of": "2025-11-01T00:00:00Z",
+ "ingested_at": "2025-10-25T08:00:00Z",
+ "rate_policy": {
+  "kind": "rate_policy",
+  "id": "POL-SYNTH-RATE-01",
+  "governing": "max_valid_rate",
+  "interval_fraction_of_remaining_life": 0.5,
+  "max_interval_years": 10,
+  "uncertainty": {
+   "combination": "linear_sum",
+   "coverage_basis": "conservative linear addition of each reading's stated uncertainty (synthetic; PROC-UT-01 does not declare independence)"
+  },
+  "source_document": "SYNTH site inspection philosophy (synthetic; modelled on the common half-remaining-life rule)",
+  "approved_by": "J. Engineer (synthetic)",
+  "provenance": {
+   "source_system": "engineer-entry",
+   "source_ref": "synthetic-policy.json#POL-SYNTH-RATE-01",
+   "origin": "synthetic",
+   "basis": "engineer_entered",
+   "event_time": "2026-10-29T08:00:00Z",
+   "ingested_at": "2026-10-29T08:00:00Z"
+  }
+ },
+ "lines": [
+  {
+   "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+   "line_number": "NG-18-50110-S710",
+   "unit": "GAS/COMP",
+   "description": "HP gas compression train A, 18\" line (synthetic)",
+   "fluid": "NG (raw natural gas)",
+   "criticality": "5",
+   "design_p_bar": 35,
+   "oper_p_bar": 20,
+   "design_t_c": 180,
+   "oper_t_c": 119,
+   "material": "C/S",
+   "pid": "SYN-312",
+   "cmls": [
+    {
+     "id": "A-01",
+     "description": "Elbow 1, extrados",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 9.0,
+      "source_document": "NG-18-50110-S710 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    },
+    {
+     "id": "A-02",
+     "description": "Straight run downstream of control valve",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 9.0,
+      "source_document": "NG-18-50110-S710 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    },
+    {
+     "id": "A-03",
+     "description": "Tee branch",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 9.0,
+      "source_document": "NG-18-50110-S710 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+   "line_number": "WI-6-41200-S2",
+   "unit": "COF/INWAT",
+   "description": "Water injection header, 6\" line (synthetic)",
+   "fluid": "Injection water (deaerated seawater)",
+   "criticality": "3",
+   "design_p_bar": 200,
+   "oper_p_bar": 150,
+   "design_t_c": 60,
+   "oper_t_c": 35,
+   "material": "C/S",
+   "pid": "SYN-415",
+   "cmls": [
+    {
+     "id": "B-01",
+     "description": "Pump discharge elbow",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 4.0,
+      "source_document": "WI-6-41200-S2 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    },
+    {
+     "id": "B-02",
+     "description": "Header tee, bottom",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 4.0,
+      "source_document": "WI-6-41200-S2 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    }
+   ]
+  },
+  {
+   "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+   "line_number": "PW-8-30300-S3",
+   "unit": "PW/PWAT",
+   "description": "Produced water line, 8\" (synthetic)",
+   "fluid": "Produced water",
+   "criticality": "4",
+   "design_p_bar": 25,
+   "oper_p_bar": 12,
+   "design_t_c": 90,
+   "oper_t_c": 75,
+   "material": "C/S",
+   "pid": "SYN-520",
+   "cmls": [
+    {
+     "id": "C-01",
+     "description": "Line bottom, wireless UT sensor WUT-C1",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 6.0,
+      "source_document": "PW-8-30300-S3 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    },
+    {
+     "id": "C-02",
+     "description": "Elbow 2 (manual UT)",
+     "active_from": "2010-01-01T00:00:00Z",
+     "active_to": null,
+     "t_min": {
+      "value_mm": 6.0,
+      "source_document": "PW-8-30300-S3 pressure-design t_min calculation (synthetic)",
+      "source_revision": "A",
+      "entered_by": "J. Engineer (synthetic)",
+      "entered_at": "2025-10-25T08:00:00Z",
+      "approval_status": "approved"
+     }
+    }
+   ]
+  }
+ ],
+ "campaigns": [
+  {
+   "work_order": "71000001",
+   "technique": "UTM-01-100%",
+   "read_date": "2016-03-01",
+   "performer": "Inspector A (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2016",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 14.2,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.0,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-03",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 14.0,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "71000002",
+   "technique": "UTM-01-100%",
+   "read_date": "2019-03-01",
+   "performer": "Inspector A (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2019",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.9,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 12.4,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-03",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.95,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "71000003",
+   "technique": "UTM-01-100%",
+   "read_date": "2022-03-01",
+   "performer": "Inspector A (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2022",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.6,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 11.5,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-03",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.9,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "71000004",
+   "technique": "UTM-01-100%",
+   "read_date": "2025-03-01",
+   "performer": "Inspector A (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2025",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.3,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 10.3,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-03",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 13.85,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "71000010",
+   "technique": "VIE-01-100%",
+   "read_date": "2025-01-15",
+   "performer": "Inspector A (synthetic)",
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "A-02",
+     "class": "COTE",
+     "point_description": "Coating External Condition",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "02CO - 1-Minor coating damage (Ri2-Ri1)",
+     "comment": "Coating breakdown at clamp downstream of control valve (Photo 1, synthetic)"
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "1510",
+     "class": "BOLT",
+     "point_description": "Bolting",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "01NF - 1-Good condition (No action required)",
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "1710",
+     "class": "SUP",
+     "point_description": "Supports-Steel & Spring Hanger",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "01NF - 1-Good condition (No action required)",
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+     "position": "1910",
+     "class": "VIB",
+     "point_description": "Vibration Observed",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "01VB - 1-No vibrations/Steady state process",
+     "comment": ""
+    }
+   ]
+  },
+  {
+   "work_order": "72000001",
+   "technique": "UTM-01-100%",
+   "read_date": "2018-06-01",
+   "performer": "Inspector B (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2018",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 7.1,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 6.9,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "72000002",
+   "technique": "UTM-01-100%",
+   "read_date": "2021-06-01",
+   "performer": "Inspector B (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2021",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 6.7,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 6.6,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "72000003",
+   "technique": "UTM-01-100%",
+   "read_date": "2024-06-01",
+   "performer": "Inspector B (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-2",
+   "calibration_ref": "CAL-SYN-2024",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 6.2,
+     "qual_reading": null,
+     "comment": ""
+    },
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 6.1,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "72000010",
+   "technique": "VII-01-100%",
+   "read_date": "2024-06-10",
+   "performer": "Inspector B (synthetic)",
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "B-02",
+     "class": "DMGE",
+     "point_description": "WATER-Pitting-Int. Damage-VII",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "02PI - 1-Pitting observed, with moderate growth",
+     "comment": "Internal pitting at header tee bottom (synthetic)"
+    },
+    {
+     "tag": "SYN/FPSOT/COF/INWAT/6-IG-0120S2",
+     "position": "2610",
+     "class": "INTL",
+     "point_description": "Internal Fittings",
+     "uom": "",
+     "quant_reading": null,
+     "qual_reading": "01NF - 1-Good condition (No action required)",
+     "comment": ""
+    }
+   ]
+  },
+  {
+   "work_order": "73000001",
+   "technique": "UTM-01-100%",
+   "read_date": "2019-09-01",
+   "performer": "Inspector C (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2019",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 9.0,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73000002",
+   "technique": "UTM-01-100%",
+   "read_date": "2025-09-01",
+   "performer": "Inspector C (synthetic)",
+   "procedure_id": "PROC-SYN-UT-01",
+   "procedure_revision": "A",
+   "instrument_id": "UTI-SYN-1",
+   "calibration_ref": "CAL-SYN-2025",
+   "measurement_uncertainty_mm": 0.2,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-02",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.1,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100001",
+   "technique": "WUT-CONT",
+   "read_date": "2025-01-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.4,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100002",
+   "technique": "WUT-CONT",
+   "read_date": "2025-02-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.37,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100003",
+   "technique": "WUT-CONT",
+   "read_date": "2025-03-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.34,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100004",
+   "technique": "WUT-CONT",
+   "read_date": "2025-04-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.31,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100005",
+   "technique": "WUT-CONT",
+   "read_date": "2025-05-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.28,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100006",
+   "technique": "WUT-CONT",
+   "read_date": "2025-06-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.25,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100007",
+   "technique": "WUT-CONT",
+   "read_date": "2025-07-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.22,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100008",
+   "technique": "WUT-CONT",
+   "read_date": "2025-08-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.19,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  },
+  {
+   "work_order": "73100009",
+   "technique": "WUT-CONT",
+   "read_date": "2025-09-01",
+   "performer": "Wireless sensor WUT-C1",
+   "procedure_id": "PROC-SYN-WUT-01",
+   "procedure_revision": "A",
+   "instrument_id": "WUT-C1",
+   "calibration_ref": "CAL-WUT-C1-2024",
+   "measurement_uncertainty_mm": 0.05,
+   "rows": [
+    {
+     "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+     "position": "C-01",
+     "class": "WTHK",
+     "point_description": "Wall thickness",
+     "uom": "mm",
+     "quant_reading": 8.16,
+     "qual_reading": null,
+     "comment": ""
+    }
+   ],
+   "quality": "good"
+  }
+ ],
+ "comparability_decisions": [
+  {
+   "kind": "comparability_decision",
+   "id": "DEC-A-01",
+   "location_id": "A-01",
+   "reading_ids": [
+    "WB-71000001-A-01",
+    "WB-71000002-A-01",
+    "WB-71000003-A-01",
+    "WB-71000004-A-01"
+   ],
+   "rationale": "Same procedure rev A and instrument UTI-SYN-1; periodic calibrations to the same reference block (synthetic).",
+   "decided_by": "J. Engineer (synthetic)",
+   "decided_at": "2025-10-25T08:00:00Z",
+   "provenance": {
+    "source_system": "engineer-entry",
+    "source_ref": "synthetic-portfolio.json#DEC-A-01",
+    "origin": "synthetic",
+    "basis": "engineer_entered",
+    "event_time": "2025-10-25T08:00:00Z",
+    "ingested_at": "2025-10-25T08:00:00Z"
+   }
+  },
+  {
+   "kind": "comparability_decision",
+   "id": "DEC-A-02",
+   "location_id": "A-02",
+   "reading_ids": [
+    "WB-71000001-A-02",
+    "WB-71000002-A-02",
+    "WB-71000003-A-02",
+    "WB-71000004-A-02"
+   ],
+   "rationale": "Same procedure rev A and instrument UTI-SYN-1; periodic calibrations to the same reference block (synthetic).",
+   "decided_by": "J. Engineer (synthetic)",
+   "decided_at": "2025-10-25T08:00:00Z",
+   "provenance": {
+    "source_system": "engineer-entry",
+    "source_ref": "synthetic-portfolio.json#DEC-A-02",
+    "origin": "synthetic",
+    "basis": "engineer_entered",
+    "event_time": "2025-10-25T08:00:00Z",
+    "ingested_at": "2025-10-25T08:00:00Z"
+   }
+  },
+  {
+   "kind": "comparability_decision",
+   "id": "DEC-A-03",
+   "location_id": "A-03",
+   "reading_ids": [
+    "WB-71000001-A-03",
+    "WB-71000002-A-03",
+    "WB-71000003-A-03",
+    "WB-71000004-A-03"
+   ],
+   "rationale": "Same procedure rev A and instrument UTI-SYN-1; periodic calibrations to the same reference block (synthetic).",
+   "decided_by": "J. Engineer (synthetic)",
+   "decided_at": "2025-10-25T08:00:00Z",
+   "provenance": {
+    "source_system": "engineer-entry",
+    "source_ref": "synthetic-portfolio.json#DEC-A-03",
+    "origin": "synthetic",
+    "basis": "engineer_entered",
+    "event_time": "2025-10-25T08:00:00Z",
+    "ingested_at": "2025-10-25T08:00:00Z"
+   }
+  },
+  {
+   "kind": "comparability_decision",
+   "id": "DEC-B-01",
+   "location_id": "B-01",
+   "reading_ids": [
+    "WB-72000001-B-01",
+    "WB-72000002-B-01",
+    "WB-72000003-B-01"
+   ],
+   "rationale": "Instrument UTI-SYN-2 verified equivalent to UTI-SYN-1 on the reference block for this location; same procedure rev A (synthetic).",
+   "decided_by": "J. Engineer (synthetic)",
+   "decided_at": "2025-10-25T08:00:00Z",
+   "provenance": {
+    "source_system": "engineer-entry",
+    "source_ref": "synthetic-portfolio.json#DEC-B-01",
+    "origin": "synthetic",
+    "basis": "engineer_entered",
+    "event_time": "2025-10-25T08:00:00Z",
+    "ingested_at": "2025-10-25T08:00:00Z"
+   }
+  },
+  {
+   "kind": "comparability_decision",
+   "id": "DEC-C-02",
+   "location_id": "C-02",
+   "reading_ids": [
+    "WB-73000001-C-02",
+    "WB-73000002-C-02"
+   ],
+   "rationale": "Same procedure and instrument; periodic calibrations to the same reference block (synthetic).",
+   "decided_by": "J. Engineer (synthetic)",
+   "decided_at": "2025-10-25T08:00:00Z",
+   "provenance": {
+    "source_system": "engineer-entry",
+    "source_ref": "synthetic-portfolio.json#DEC-C-02",
+    "origin": "synthetic",
+    "basis": "engineer_entered",
+    "event_time": "2025-10-25T08:00:00Z",
+    "ingested_at": "2025-10-25T08:00:00Z"
+   }
+  }
+ ],
+ "sensor_events": [
+  {
+   "record_id": "WUT-C1-EVT-1",
+   "sensor_id": "WUT-C1",
+   "tag": "SYN/FPSOT/PW/PWAT/8-PW-0300-S3",
+   "location_id": "C-01",
+   "event_type": "connectivity_lost",
+   "event_time": "2025-10-05T03:00:00Z",
+   "firmware_or_configuration_ref": "CFG-WUT-2",
+   "quality": "good",
+   "source_ref": "synthetic-portfolio.json#WUT-C1-EVT-1"
+  }
+ ],
+ "images": [
+  {
+   "tag": "SYN/FPSOT/GAS/COMP/IPN-_NG-0610-30-S710",
+   "position": "A-02",
+   "image_ref": "IMG-SYNTH-PIPE-01"
+  }
+ ]
+}

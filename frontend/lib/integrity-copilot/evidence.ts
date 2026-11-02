@@ -487,7 +487,7 @@ export function assessTrend(
         threshold = { status: "at_or_below_t_min", limit_id: limit.id, t_min_mm: tMin, latest_mm: last.thickness_mm };
       } else if (governing.rate_mm_per_year !== null && governing.rate_mm_per_year > 0) {
         const life = (last.thickness_mm - tMin) / governing.rate_mm_per_year;
-        threshold = { status: "above_t_min", limit_id: limit.id, t_min_mm: tMin, remaining_life_years: life, note: `(${last.thickness_mm} - ${tMin}) / ${governing.rate_mm_per_year}` };
+        threshold = { status: "above_t_min", limit_id: limit.id, t_min_mm: tMin, remaining_life_years: life, note: `(${last.thickness_mm} - ${tMin}) / ${Number(governing.rate_mm_per_year.toFixed(4))}` };
         const interval = Math.min(life * policy.interval_fraction_of_remaining_life, policy.max_interval_years);
         nextDue = addYears(last.provenance.event_time, interval);
       } else {

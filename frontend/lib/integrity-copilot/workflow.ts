@@ -78,6 +78,11 @@ export function evidenceIndex(fx: CircuitFixture, accepted: UTReading[]): Map<st
   return m;
 }
 
+// Re-inspection method = the technique and procedure of the trend's latest accepted reading.
+function methodFor(r: UTReading | undefined): string {
+  return r ? `${r.method} per ${r.procedure_id} rev ${r.procedure_revision} (same procedure as trend basis)` : "same technique and procedure as the trend basis";
+}
+
 export async function runReplay(fx: CircuitFixture, gateway: MetaGateway, now: () => Date = () => new Date()): Promise<WorkflowResult> {
   const { accepted, rejected } = ingestUTRows(fx.ut_rows, fx.register);
   const locations = [...new Set(fx.register.map((l) => l.location_id))].sort();
@@ -119,7 +124,7 @@ export async function runReplay(fx: CircuitFixture, gateway: MetaGateway, now: (
       findings.push({ text: `${loc}: remaining life ${fmt(th.remaining_life_years)} y to t_min ${th.t_min_mm} mm ${th.note}.`, evidence: [...ev, ref("engineer_limit", th.limit_id)], basis: "derived" });
       if (t.next_inspection_due && (!next || t.next_inspection_due < next.due_by)) {
         next = {
-          method: "UT-A-scan per PROC-UT-01 (same procedure as trend basis)",
+          method: methodFor(accepted.find((r) => r.id === t.latest.id)),
           due_by: t.next_inspection_due,
           rationale: `${loc}: min(${fx.rate_policy.interval_fraction_of_remaining_life} × remaining life, ${fx.rate_policy.max_interval_years} y) under ${fx.rate_policy.id}`,
           evidence: [...ev, ref("engineer_limit", th.limit_id)],
