@@ -127,3 +127,51 @@ test("C-015 P1: alias + hyphenated unit (ASCII and non-breaking hyphen) is withh
     withheld((await replay(`${OK_EN} ${claim}`)).r, claim);
   }
 });
+
+test("technique codes with a trailing % (UTM-01-100%) are aliased whole; free-standing % is still withheld", () => {
+  const { masked, aliases } = prepareModelInput("next: UTM-01-100% per PROC-SYN-UT-01 (same procedure); VIE-01-100% visual");
+  assert.ok(!masked.includes("%"), masked);
+  assert.equal(/\p{N}/u.test(masked), false, masked);
+  const utm = [...aliases].find(([, id]) => id === "UTM-01-100%")![0];
+  assert.deepEqual(numericContent(`Re-inspect with ${utm} per PROC#b.`, aliases), []);
+  assert.equal(restoreAliases(`Re-inspect with ${utm}.`, aliases), "Re-inspect with UTM-01-100%.");
+  assert.deepEqual(numericContent("coverage was 100%", aliases).sort(), ["100%"].sort());
+  assert.ok(numericContent("coverage was complete %", aliases).includes("%"));
+});
+
+test("a withheld narrative is evicted from the response cache, so a retry asks the model again", async () => {
+  const { ResponseCache } = await import("../lib/integrity-copilot/gateway.ts");
+  const cache = new ResponseCache();
+  let calls = 0;
+  const fetchImpl = (async () => {
+    calls++;
+    return new Response(JSON.stringify({ model: "muse-glimmer:latest", message: { content: "CML#a has 18 years left." }, done: true, done_reason: "stop", prompt_eval_count: 5, eval_count: 5 }), { status: 200 });
+  }) as unknown as typeof fetch;
+  const gw = () => new MetaGateway({ local: true, fetchImpl, cache });
+  const r1 = await runReplay(fx, gw(), NOW);
+  assert.ok(r1.meta_summary.status === "error" && r1.meta_summary.reason === "unfaithful");
+  assert.equal(cache.size, 0, "withheld text must not stay cached");
+  await runReplay(fx, gw(), NOW);
+  assert.equal(calls, 2, "the retry reached the model again");
+});
+
+test("C-032 P1: %-bearing aliases only as a method; leftover % never reaches the model (the review's exact shapes)", () => {
+  const { masked, aliases } = prepareModelInput("Use UTM-01-100% per PROC-SYN-UT-01; coverage 100%; coverage %");
+  assert.equal(/[%‰\p{N}]/u.test(masked), false, masked);
+  for (const bad of [
+    "Coverage is UTM#a.", "The percentage equals UTM#a.", "It achieved UTM#a.", "A cobertura é UTM#a.",
+    "Coverage is method UTM#a.", "Coverage is technique UTM#a.", "Coverage is inspection UTM#a.", "A cobertura é método UTM#a.",
+    "Coverage equals the fully documented inspection method UTM#a.",
+    "The percentage equals the fully documented inspection method UTM#a.",
+    "A cobertura é o método de inspeção totalmente documentado UTM#a.",
+    "Coverage equals e.g. inspection method UTM#a.", "Coverage equals i.e. inspection method UTM#a.",
+    "The percentage is e.g. re-inspection technique UTM#a.", "A cobertura é p.ex. método de inspeção UTM#a.",
+    "A percentagem é e.g. técnica UTM#a.",
+  ]) {
+    assert.ok(numericContent(bad, aliases).length > 0, bad);
+  }
+  for (const good of ["Use UTM#a per PROC#b.", "the next inspection is UTM#a per PROC#b rev A", "Re-inspect using UTM#a.", "Próxima inspeção por UTM#a conforme PROC#b."]) {
+    assert.deepEqual(numericContent(good, aliases), [], good);
+  }
+  assert.equal(restoreAliases("Use UTM#a per PROC#b.", aliases), "Use UTM-01-100% per PROC-SYN-UT-01.");
+});

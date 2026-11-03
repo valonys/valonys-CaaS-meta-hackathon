@@ -19,7 +19,9 @@
 // Identifier-shaped tokens starting with a letter, hyphenated or compact: CML-03, POL-SYNTH-RATE-01,
 // CML03, Rev2, A1B. Only those containing a digit are aliased. A leading \b means a token glued to a
 // preceding digit (the "T00" inside an ISO timestamp) is not an identifier, so dates stay [value].
-const IDENTIFIER = /\b[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*\b/g;
+// A trailing "%" belongs to technique codes such as UTM-01-100% (100 % coverage), so the whole code
+// is one identifier and is aliased; a free-standing % in the model's prose is still numeric content.
+const IDENTIFIER = /\b[A-Za-z][A-Za-z0-9]*(?:-[A-Za-z0-9]+)*\b%?/g;
 // Anything alias-shaped, in any case. Only an exact canonical alias (lower-case suffix, issued for
 // this request) is accepted; CML#A or CML#ZZ is a forgery and withholds the summary.
 const ALIAS = /\b(\p{L}+)#(\p{L}+)\b/gu;
@@ -29,7 +31,7 @@ const HIDDEN = /[\p{Cf}\p{Co}\p{Cs}\p{Default_Ignorable_Code_Point}]/u;
 const NUMERIC_CHARS = /[\p{N}%‰∞]+/gu;
 // An alias stated as the value of a quantity ("the remaining life is CML#a", "o ano é CAL#h") is a
 // value claim in disguise, as is an alias directly followed by a unit ("CML#a years").
-const QUANTITY = "life|lives|year|years|date|dates|rate|rates|thickness|t_min|limit|due|age|interval|vida|ano|anos|data|datas|taxa|taxas|espessura|limite|prazo|vencimento|idade|intervalo";
+const QUANTITY = "life|lives|year|years|date|dates|rate|rates|thickness|t_min|limit|due|age|interval|vida|ano|anos|data|datas|taxa|taxas|espessura|limite|prazo|vencimento|idade|intervalo|coverage|percentage|percent|proportion|extent|share|ratio|cobertura|percentagem|porcentagem|proporção|proporcao|extensão|extensao";
 const ALIAS_AS_STATED_VALUE = new RegExp(`(?<![\\p{L}])(?:${QUANTITY})(?![\\p{L}])[^.;!?\\n]{0,40}?(?:(?<![\\p{L}])(?:is|are|was|were|equals|é|são|era|foi|igual\\s+a)(?![\\p{L}])|[=:])\\s*\\p{L}+#\\p{L}+`, "iu");
 // Separators include hyphens and dashes ("CML#a-year", "CML#a‑year"), which restore to "CML-03-year".
 const ALIAS_AS_VALUE = /\b[A-Za-z]+#[a-z]+[\s\p{Pd}]*(?:years?|yrs?|y|anos?|months?|meses|m[eê]s|days?|dias?|hours?|horas?|h|mm\/?y|mm|in|inch(?:es)?|polegadas?)(?![\p{L}])/iu;
@@ -82,8 +84,19 @@ export function prepareModelInput(text: string): ModelInput {
     }
     return a;
   });
-  return { masked: withAliases.replace(NUMERIC_RUN, "[value]"), aliases };
+  // Every number becomes [value]; a % left over (from a free-standing percentage) is dropped, so the
+  // request carries neither digits nor % signs (C-032 P1).
+  return { masked: withAliases.replace(NUMERIC_RUN, "[value]").replace(/[%‰]/g, ""), aliases };
 }
+
+// A %-bearing technique code (e.g. UTM-01-100%) restores to text containing "%", so its alias may
+// only be used as a method: right after a method/inspection word. Anywhere else it could read as a
+// coverage or percentage claim once restored (C-032 P1).
+const METHOD_CONTEXT = /(?:use|uses|used|usar|usa|usando|utiliza|utilizando|per|using|with|by|via|technique|method|methods|inspection|inspections|re-inspection|reinspection|com|usando|por|pela|pelo|segundo|conforme|técnica|tecnica|método|metodo|inspeção|inspecao|inspecção|reinspeção)(?![\p{L}])[^.;!?\n]{0,24}$/iu;
+// Quantity meaning wins over a later method word anywhere earlier in the reply: punctuation-based
+// sentence splitting is unsafe because abbreviations such as "e.g." contain periods. This is
+// deliberately conservative; a withheld summary is regenerated (C-033/C-035 P1).
+const QUANTITY_LINK_TO_ALIAS = new RegExp(`(?<![\\p{L}])(?:${QUANTITY})(?![\\p{L}])[\\s\\S]*?(?:(?<![\\p{L}])(?:is|are|was|were|equals|é|são|era|foi|igual\\s+a)(?![\\p{L}])|[=:])[\\s\\S]*$`, "iu");
 
 export function numericContent(modelText: string, aliases: Map<string, string>): string[] {
   const found = new Set<string>();
@@ -93,6 +106,11 @@ export function numericContent(modelText: string, aliases: Map<string, string>):
   const asValue = modelText.match(ALIAS_AS_VALUE) ?? modelText.match(ALIAS_AS_STATED_VALUE);
   if (asValue) found.add(`identifier used as a value: ${asValue[0]}`);
   if (PLACEHOLDER.test(modelText)) found.add("[value] placeholder");
+  for (const m of modelText.matchAll(ALIAS)) {
+    if (!(aliases.get(m[0]) ?? "").includes("%")) continue;
+    const before = modelText.slice(0, m.index ?? 0);
+    if (QUANTITY_LINK_TO_ALIAS.test(before) || !METHOD_CONTEXT.test(before)) found.add(`percent-bearing identifier outside a method context: ${m[0]}`);
+  }
   const rest = modelText.replace(ALIAS, " ");
   for (const m of rest.matchAll(NUMERIC_CHARS)) found.add(m[0]);
   for (const m of fold(rest).replace(NON_NUMERIC_TERMS, " ").matchAll(WORDS)) found.add(m[0]);

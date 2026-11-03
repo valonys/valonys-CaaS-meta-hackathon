@@ -89,6 +89,11 @@ export class ResponseCache {
   get size() {
     return this.m.size;
   }
+  // Drop an entry a caller rejected after the fact (e.g. a narrative the numeric guard withheld),
+  // so a retry asks the model again instead of replaying the rejected text.
+  delete(key: string): boolean {
+    return this.m.delete(key);
+  }
 }
 
 export interface GatewayConfig {
@@ -128,7 +133,7 @@ export interface UsageEntry {
 }
 
 export type GatewayResult =
-  | { status: "ok"; text: string; model_id: string; call_id: string }
+  | { status: "ok"; text: string; model_id: string; call_id: string; cache_key?: string }
   | { status: "unavailable"; reason: "not_configured" | "model_not_allowed" | "budget_exhausted"; detail: string; call_id: string }
   | { status: "error"; reason: "http" | "timeout" | "malformed_response" | "incomplete"; detail: string; call_id: string };
 
@@ -177,6 +182,11 @@ export class MetaGateway {
     return this.ledger.spent;
   }
 
+  // Forget a cached response the caller rejected downstream.
+  evict(cacheKey: string | undefined): void {
+    if (cacheKey) this.cfg.cache?.delete(cacheKey);
+  }
+
   async respond(req: RespondRequest): Promise<GatewayResult> {
     const now = this.cfg.now ?? Date.now;
     const call_id = `mg-${now().toString(36)}-${(seq++).toString(36)}`;
@@ -217,7 +227,7 @@ export class MetaGateway {
     const hit = this.cfg.cache?.get(cacheKey);
     if (hit) {
       log({ outcome: "ok", model_id: hit.model_id, estimated_usd: 0, detail: "cache_hit" });
-      return { status: "ok", text: hit.text, model_id: hit.model_id, call_id };
+      return { status: "ok", text: hit.text, model_id: hit.model_id, call_id, cache_key: cacheKey };
     }
     const inputChars = JSON.stringify(req.input).length;
     // Never trust the caller's hint alone: bill at least every input_image actually sent.
@@ -314,7 +324,7 @@ export class MetaGateway {
         this.ledger.settle(worstCase, actual);
         log({ outcome: "ok", latency_ms: now() - t0, model_id: modelId, usage: valid, estimated_usd: Math.min(actual, worstCase) });
         this.cfg.cache?.set(cacheKey, { text: text as string, model_id: modelId as string });
-        return { status: "ok", text: text as string, model_id: modelId as string, call_id };
+        return { status: "ok", text: text as string, model_id: modelId as string, call_id, cache_key: cacheKey };
       } catch (e) {
         clearTimeout(timer);
         lastDetail = (e as Error).name === "AbortError" ? "timeout" : `network: ${(e as Error).name}`;
@@ -344,7 +354,7 @@ export class MetaGateway {
     const hit = this.cfg.cache?.get(cacheKey);
     if (hit) {
       log({ outcome: "ok", endpoint: "local-chat", model_id: hit.model_id, estimated_usd: 0, detail: "cache_hit" });
-      return { status: "ok", text: hit.text, model_id: hit.model_id, call_id };
+      return { status: "ok", text: hit.text, model_id: hit.model_id, call_id, cache_key: cacheKey };
     }
     if (!this.ledger.reserve(0)) {
       log({ outcome: "unavailable", endpoint: "local-chat", detail: "budget_exhausted" });
@@ -396,7 +406,7 @@ export class MetaGateway {
       }
       log({ outcome: "ok", endpoint: "local-chat", latency_ms: now() - t0, model_id: modelId, usage: usage as UsageEntry["usage"], estimated_usd: 0 });
       this.cfg.cache?.set(cacheKey, { text: text as string, model_id: modelId as string });
-      return { status: "ok", text: text as string, model_id: modelId as string, call_id };
+      return { status: "ok", text: text as string, model_id: modelId as string, call_id, cache_key: cacheKey };
     } catch (e) {
       const timeout = (e as Error).name === "AbortError";
       log({ outcome: "error", endpoint: "local-chat", latency_ms: now() - t0, detail: timeout ? "timeout" : `network: ${(e as Error).name}` });

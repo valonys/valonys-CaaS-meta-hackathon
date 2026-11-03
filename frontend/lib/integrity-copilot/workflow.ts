@@ -181,6 +181,8 @@ export async function runReplay(fx: CircuitFixture, gateway: MetaGateway, now: (
   });
   // The narrative must carry no numbers at all (C-010 review): any numeric content withholds it.
   const unfaithful = res.status === "ok" ? numericContent(res.text, aliases) : [];
+  // A withheld narrative must not stay cached: the next replay asks the model again.
+  if (unfaithful.length && res.status === "ok") gateway.evict(res.cache_key);
   const meta_summary: MetaSummary =
     res.status !== "ok"
       ? { status: res.status, reason: res.reason, detail: res.detail }

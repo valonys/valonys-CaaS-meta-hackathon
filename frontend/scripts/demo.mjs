@@ -8,6 +8,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { randomBytes } from "node:crypto";
 import { fileURLToPath } from "node:url";
+import { warmUp } from "./warmup.mjs";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url)); // path-safe (spaces etc.)
 const NEXT = `${ROOT}node_modules/.bin/next`;
@@ -53,30 +54,23 @@ const child = spawn(NEXT, ["start", "-p", port], { cwd: ROOT, env, stdio: "inher
 for (const sig of ["SIGINT", "SIGTERM"]) process.on(sig, () => child.kill(sig));
 child.on("exit", (code) => process.exit(code ?? 0));
 
-// Live mode: warm the per-process cache once so the first page load does not wait on the model.
-// Waits for the server to accept connections, then makes ONE replay request and reports its real
-// duration and outcome (no silent retries of an in-flight model call).
+// Live mode: warm every line once (default replay + each portfolio line) so recording needs no waits.
+// Readiness is printed only when every line is ok; see scripts/warmup.mjs.
 if (liveRequested) {
-  const warm = async () => {
-    const base = `http://localhost:${port}`;
+  const base = `http://localhost:${port}`;
+  const waitForServer = async () => {
     for (let i = 0; i < 120; i++) {
       try {
         await fetch(`${base}/api/integrity-copilot/does-not-exist`, { method: "HEAD" });
-        break; // any HTTP answer means the server is up
+        return;
       } catch {
         await new Promise((res) => setTimeout(res, 500));
       }
     }
-    const t0 = Date.now();
-    console.log(`  Warming the cache: ${narrative}${env.INTEGRITY_COPILOT_MUSE === "api" ? "" : " (first narrative can take a minute or two)"}...`);
-    try {
-      const r = await fetch(`${base}/api/integrity-copilot/replay`, { headers: { "x-integrity-copilot-token": token }, signal: AbortSignal.timeout(600_000) });
-      const body = await r.json();
-      const m = body.meta_summary ?? {};
-      console.log(`  Warm-up done in ${Math.round((Date.now() - t0) / 1000)} s: narrative ${m.status ?? `HTTP ${r.status}`}${m.reason ? ` (${m.reason})` : ""}`);
-    } catch (e) {
-      console.log(`  Warm-up failed after ${Math.round((Date.now() - t0) / 1000)} s: ${e?.name ?? "error"} ${e?.message ?? ""}`);
-    }
   };
-  void warm();
+  void (async function warm() {
+    await waitForServer();
+    console.log(`  Warming the cache: ${narrative}${env.INTEGRITY_COPILOT_MUSE === "api" ? "" : " (local Muse: about 2-5 minutes per line)"}`);
+    await warmUp({ base, token });
+  })();
 }
