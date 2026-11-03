@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { MetaGateway } from "../lib/integrity-copilot/gateway.ts";
-import { numericContent, prepareModelInput, restoreAliases } from "../lib/integrity-copilot/faithfulness.ts";
+import { numericContent, PERCENT_CODE_PHRASE, prepareModelInput, restoreAliases } from "../lib/integrity-copilot/faithfulness.ts";
 import { runReplay, type CircuitFixture, type WorkflowResult } from "../lib/integrity-copilot/workflow.ts";
 
 const fx = JSON.parse(readFileSync(new URL("../lib/integrity-copilot/fixtures/synthetic-circuit.json", import.meta.url), "utf8")) as CircuitFixture;
@@ -128,15 +128,101 @@ test("C-015 P1: alias + hyphenated unit (ASCII and non-breaking hyphen) is withh
   }
 });
 
-test("technique codes with a trailing % (UTM-01-100%) are aliased whole; free-standing % is still withheld", () => {
+test("C-037: %-bearing technique codes never reach the model, not even as an alias; free-standing % is still withheld", () => {
   const { masked, aliases } = prepareModelInput("next: UTM-01-100% per PROC-SYN-UT-01 (same procedure); VIE-01-100% visual");
   assert.ok(!masked.includes("%"), masked);
   assert.equal(/\p{N}/u.test(masked), false, masked);
-  const utm = [...aliases].find(([, id]) => id === "UTM-01-100%")![0];
-  assert.deepEqual(numericContent(`Re-inspect with ${utm} per PROC#b.`, aliases), []);
-  assert.equal(restoreAliases(`Re-inspect with ${utm}.`, aliases), "Re-inspect with UTM-01-100%.");
-  assert.deepEqual(numericContent("coverage was 100%", aliases).sort(), ["100%"].sort());
+  assert.ok(masked.includes(`next: ${PERCENT_CODE_PHRASE} per PROC#a`), masked);
+  assert.equal([...aliases.values()].some((id) => id.includes("%")), false, "no alias restores to a %");
+  // Realistic narratives that the C-036 rule withheld are now accepted, and restore with no %.
+  for (const s of [
+    `The corrosion rate is high at this point. Re-inspect using ${PERCENT_CODE_PHRASE} per PROC#a.`,
+    `Remaining life is short; re-inspect with ${PERCENT_CODE_PHRASE}.`,
+    `A taxa de corrosão é elevada. Reinspecionar usando ${PERCENT_CODE_PHRASE} conforme PROC#a.`,
+  ]) {
+    assert.deepEqual(numericContent(s, aliases), [], s);
+    assert.ok(!restoreAliases(s, aliases).includes("%"), s);
+  }
+  // Any attempt to name the code is an unknown alias and withholds.
+  assert.ok(numericContent("Coverage is UTM#b.", aliases).length > 0);
+  assert.ok(numericContent("coverage was 100%", aliases).includes("100%"));
   assert.ok(numericContent("coverage was complete %", aliases).includes("%"));
+});
+
+test("C-037 review P1: Unicode percent signs (％ ﹪ ٪) and per-mille are percent too, end to end", () => {
+  for (const sign of ["%", "％", "﹪", "٪", "‰", "‱"]) {
+    const { masked, aliases } = prepareModelInput(`next: UTM-01-100${sign} per PROC-SYN-UT-01; coverage 100${sign}; coverage ${sign}`);
+    assert.equal(new RegExp(`[%％﹪٪‰‱\\p{N}]`, "u").test(masked), false, masked);
+    assert.ok(masked.includes(PERCENT_CODE_PHRASE), masked);
+    assert.equal([...aliases.values()].some((id) => /[%％﹪٪‰‱]/u.test(id)), false, sign);
+    // The review's exact reply shape: an echoed sign is numeric content and withholds.
+    assert.ok(numericContent(`It achieved UTM#a${sign}.`, aliases).length > 0, sign);
+    assert.ok(numericContent(`It achieved full coverage ${sign}.`, aliases).includes(sign), sign);
+  }
+  // A caller-built map with a Unicode-percent code is still method-only.
+  const map = new Map([["UTM#a", "UTM-01-100％"]]);
+  assert.ok(numericContent("Coverage is UTM#a.", map).length > 0);
+  assert.deepEqual(numericContent("Re-inspect using UTM#a.", map), []);
+});
+
+test("C-038 review P1: allowlist, not a sign list: ؉ ؊ and a tag percent sign cannot reach or leave the model", () => {
+  for (const sign of ["\u0609", "\u060A", "\u2030", "\u00B0", "\u066A", "\u2031"]) {
+    const { masked, aliases } = prepareModelInput(`Use UTM-01-100${sign} per PROC-SYN-UT-01; coverage 100${sign}`);
+    assert.equal(masked.includes(sign), false, `${sign} in ${masked}`);
+    assert.ok(masked.includes(PERCENT_CODE_PHRASE), masked);
+    assert.equal([...aliases.values()].some((id) => id.includes(sign)), false, sign);
+    assert.ok(numericContent(`It achieved UTM#a${sign}.`, aliases).length > 0, sign);
+    assert.ok(numericContent(`Full coverage ${sign}.`, aliases).length > 0, sign);
+  }
+  // U+E0025 TAG PERCENT SIGN: a code followed by a hidden character is a signed code too (C-039 review),
+  // so no alias can restore its digits, and no hidden character reaches the model.
+  const { masked, aliases } = prepareModelInput("Use UTM-01-100\u{E0025} per PROC-SYN-UT-01; also UTM-02-50\u200B");
+  assert.equal(/[\p{Cf}\p{Cn}\p{Default_Ignorable_Code_Point}]/u.test(masked), false, JSON.stringify(masked));
+  assert.equal(masked, `Use ${PERCENT_CODE_PHRASE} per PROC#a; also ${PERCENT_CODE_PHRASE}`);
+  assert.equal([...aliases.values()].some((id) => id.startsWith("UTM")), false);
+  // The review's exact valid-method reply cannot restore the code's digits: UTM#a is not issued.
+  assert.ok(numericContent("Re-inspect using UTM#a per PROC#b.", aliases).length > 0);
+  assert.ok(numericContent("It achieved UTM#a\u{E0025}.", aliases).length > 0);
+  // Ordinary typographic prose stays acceptable.
+  assert.deepEqual(numericContent("The governing rate — short-term; “re-inspect” soon… Próxima inspeção «em breve».", aliases), []);
+});
+
+test("C-040 review P1: a combining mark or non-ASCII letter glued to a code makes it a signed code", () => {
+  for (const tail of ["\u0301", "\u212B", "\u2135", "é", "\u00C5", "\u2102", "\u212A", "\uFF21", "\uFB00"]) {
+    const { masked, aliases } = prepareModelInput(`Use UTM-01-100${tail} per PROC-SYN-UT-01`);
+    assert.equal(masked, `Use ${PERCENT_CODE_PHRASE} per PROC#a`, JSON.stringify(masked));
+    assert.equal([...aliases.values()].some((id) => id.startsWith("UTM")), false, tail);
+    assert.ok(numericContent(`It achieved UTM#a${tail}.`, aliases).length > 0, tail);
+  }
+  // Compatibility digits and signs still never reach the model without normalization (C-041 review).
+  const compat = prepareModelInput("Use UTM-\uFF10\uFF11 per PROC-SYN-UT-01; coverage \uFF11\uFF10\uFF10\uFF05; \u00B2 \u2167 \u00BD");
+  assert.equal(new RegExp(`[\\p{N}%\uFF05]`, "u").test(compat.masked), false, compat.masked);
+  // Ordinary Portuguese prose next to a code (separated by a space) is unaffected.
+  const { masked } = prepareModelInput("Ponto CML-03 é crítico");
+  assert.equal(masked, "Ponto CML#a é crítico");
+});
+
+test("C-042 review P1: documented EN/PT link verbs state a value, so an alias after them is withheld", () => {
+  const { aliases } = prepareModelInput("CML-03 and PROC-SYN-UT-01");
+  for (const bad of [
+    "The remaining life corresponds to CML#a.", "A vida remanescente corresponde a CML#a.",
+    "The remaining life amounts to CML#a.", "The rate stands at CML#a.", "The thickness reaches the CML#a.",
+    "The interval equals the CML#a.", "O intervalo equivale a CML#a.", "A espessura atinge CML#a.",
+    "A taxa fica em CML#a.", "O prazo será CML#a.",
+    // C-043 review: no length limit within the clause.
+    "The remaining life under the conservative engineering assessment corresponds to CML#a.",
+    "A vida remanescente segundo a avaliação conservadora de engenharia corresponde a CML#a.",
+  ]) {
+    assert.ok(numericContent(bad, aliases).some((f) => f.startsWith("identifier used as a value")), bad);
+  }
+  // Ordinary references to a point stay acceptable.
+  for (const good of [
+    "The remaining life of CML#a is short.", "The governing rate at CML#a is short-term based.",
+    "A vida remanescente em CML#a é curta.", "Re-inspect CML#a per PROC#b.",
+    "The remaining life to minimum thickness is calculated from the remaining thickness divided by the governing rate.",
+  ]) {
+    assert.deepEqual(numericContent(good, aliases), [], good);
+  }
 });
 
 test("a withheld narrative is evicted from the response cache, so a retry asks the model again", async () => {
@@ -156,8 +242,10 @@ test("a withheld narrative is evicted from the response cache, so a retry asks t
 });
 
 test("C-032 P1: %-bearing aliases only as a method; leftover % never reaches the model (the review's exact shapes)", () => {
-  const { masked, aliases } = prepareModelInput("Use UTM-01-100% per PROC-SYN-UT-01; coverage 100%; coverage %");
+  // Defence in depth for a caller-built map; prepareModelInput itself no longer issues such an alias (C-037).
+  const { masked } = prepareModelInput("Use UTM-01-100% per PROC-SYN-UT-01; coverage 100%; coverage %");
   assert.equal(/[%‰\p{N}]/u.test(masked), false, masked);
+  const aliases = new Map([["UTM#a", "UTM-01-100%"], ["PROC#b", "PROC-SYN-UT-01"]]);
   for (const bad of [
     "Coverage is UTM#a.", "The percentage equals UTM#a.", "It achieved UTM#a.", "A cobertura é UTM#a.",
     "Coverage is method UTM#a.", "Coverage is technique UTM#a.", "Coverage is inspection UTM#a.", "A cobertura é método UTM#a.",
